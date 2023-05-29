@@ -32,6 +32,12 @@ interface SendMessageOption {
     temperature: number;
     topK: number;
     maxTokens: number;
+    /**
+     * chatgpt only
+     */
+    action: undefined | 'next' | 'continue';
+
+    debug: boolean;
 }
 type Role = 'AI' | 'system' | 'user';
 interface ChatMessage {
