@@ -1,4 +1,4 @@
-import {AIClient, AIResponse, EliError, Role, SendMessageOption} from "../models/core";
+import {AIClient, AIResponse, ChatMessage, EliError, Role, SendMessageOption} from "../models/core";
 import {HttpsProxyAgent} from "https-proxy-agent";
 import {ParseEvent} from "eventsource-parser";
 
@@ -171,5 +171,13 @@ export class ChatGPTClient implements AIClient{
             console.error(response)
             throw new EliError(response as string)
         }
+    }
+
+    async destroyConversation(conversationId: string): Promise<void> {
+        throw new EliError("not implemented yet")
+    }
+
+    async getHistory(conversationId: string): Promise<ChatMessage[]> {
+        throw new EliError("not implemented yet")
     }
 }
