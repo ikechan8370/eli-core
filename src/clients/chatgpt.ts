@@ -4,7 +4,7 @@ import {ParseEvent} from "eventsource-parser";
 
 const https = require('https')
 const http = require('http')
-const {IncomingMessage} = require('http')
+import {IncomingMessage} from "http";
 const {createParser} = require('eventsource-parser')
 const {randomUUID} = require('crypto')
 
@@ -77,8 +77,8 @@ export class ChatGPTClient implements AIClient{
                 referrer: 'https://chat.openai.com/chat'
             }
             let requestLib = url.startsWith('https') ? https : http
-            const req = requestLib.request(url, option, (res: typeof IncomingMessage) => {
-                statusCode = res.statusCode
+            const req = requestLib.request(url, option, (res: IncomingMessage) => {
+                statusCode = res.statusCode as number
                 let response: string
                 function onMessage (data: string) {
                     if (data === '[DONE]') {
