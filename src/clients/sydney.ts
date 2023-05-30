@@ -3,7 +3,7 @@ import {AIClient, AIResponse, ChatMessage, Role, SendMessageOption} from "../mod
 import {randomUUID} from "crypto";
 import {HttpsProxyAgent} from "https-proxy-agent";
 import {RequestInit} from "node-fetch";
-import {RawData, Server} from "ws";
+import {RawData} from "ws";
 
 const Websocket = require('ws')
 import {WebSocket} from "ws";
@@ -45,8 +45,8 @@ export class SydneyLLMClient implements AIClient {
     private readonly wsHost: string;
     private readonly getMaxNumUserMessagesInConversationFn: () => (number | Promise<number>);
     private saveMaxNumUserMessagesInConversationFn: (maxNumUserMessagesInConversation: number) => (void | Promise<void>);
-    private timeout: number;
-    private firstMessageTimeout: number;
+    private readonly timeout: number;
+    private readonly firstMessageTimeout: number;
 
 
     constructor(opts: SydneyLLMClientOption) {
@@ -199,7 +199,7 @@ export class SydneyLLMClient implements AIClient {
         }
 
         let apology = false
-        const messagePromise = new Promise((resolve, reject) => {
+        const messagePromise: Promise<SydneyWsMessage> = new Promise((resolve, reject) => {
             let replySoFar = ['']
             let adaptiveCardsSoFar: adaptiveCard[] = []
             let suggestedResponsesSoFar: suggestedResponse[] = []
@@ -208,7 +208,7 @@ export class SydneyLLMClient implements AIClient {
             const messageTimeout = setTimeout(() => {
                 this.cleanupWebSocketConnection(ws)
                 if (replySoFar[0]) {
-                    let message = {
+                    let message: SydneyMessage = {
                         adaptiveCards: adaptiveCardsSoFar,
                         text: replySoFar.join('')
                     }
@@ -431,6 +431,46 @@ export class SydneyLLMClient implements AIClient {
                 reject(err)
             })
         })
+        const userMessage = {
+            id: crypto.randomUUID(),
+            parentMessageId,
+            role: 'User',
+            message: prompt
+        }
+        const messageJson: string = JSON.stringify(obj)
+        if (this.debug) {
+            console.debug(messageJson)
+            console.debug('\n\n\n\n')
+        }
+        try {
+            ws.send(`${messageJson}`)
+            const {
+                message: reply,
+                conversationExpiryTime
+            } = await messagePromise
+            const replyMessage = {
+                id: crypto.randomUUID(),
+                parentMessageId: userMessage.id,
+                role: 'Bing',
+                message: reply?.text,
+                details: reply
+            }
+            if (!options.sydneyApologyIgnored || !apology) {
+                this.storage.saveMessage(parentMessageId as string, conversationId, prompt, 'user', userMessage.id)
+                this.storage.saveMessage(userMessage.id, conversationId, reply.text as string, 'user', userMessage.id)
+            }
+            return {
+                parentId: parentMessageId,
+                id: replyMessage.id,
+                content: reply.text,
+                raw: reply,
+                source: 'sydney',
+                success: true,
+                type: 'llm'
+            }
+        } catch (err) {
+            throw err
+        }
 
 
     }
@@ -595,6 +635,11 @@ interface SydneySendMessageOption extends SendMessageOption {
      */
     context: string | undefined;
 
+    /**
+     * if true, the apology response will not be stored as conversation
+     */
+    sydneyApologyIgnored?: boolean;
+
 }
 
 interface adaptiveCard {
@@ -608,28 +653,28 @@ interface adaptiveCard {
 }
 
 interface suggestedResponse {
-    text: string;
-    author: string;
-    createdAt: string;
-    timestamp: string;
-    messageId: string;
-    messageType: string;
-    offense: string;
-    feedback: any;
-    contentOrigin: string;
-    privacy: any;
+    text?: string;
+    author?: string;
+    createdAt?: string;
+    timestamp?: string;
+    messageId?: string;
+    messageType?: string;
+    offense?: string;
+    feedback?: any;
+    contentOrigin?: string;
+    privacy?: any;
 }
 
 
 interface SydneyMessage extends suggestedResponse {
-    adaptiveCards: adaptiveCard[];
-    sourceAttributions: any[];
-    suggestedResponses: suggestedResponse[];
+    adaptiveCards?: adaptiveCard[] | undefined;
+    sourceAttributions?: any[] | undefined;
+    suggestedResponses?: suggestedResponse[] | undefined;
 
-    contentType: string | undefined;
+    contentType?: string | undefined;
 
-    imageTag: string | undefined;
-    spokenText: string;
+    imageTag?: string | undefined;
+    spokenText?: string | undefined;
 
 }
 
@@ -656,4 +701,9 @@ interface SydneyItem {
         message: string;
         serviceVersion: string;
     }
+}
+
+interface SydneyWsMessage {
+    message: SydneyMessage;
+    conversationExpiryTime?: string | undefined;
 }

@@ -8,12 +8,12 @@ interface AIClient {
 
 interface AIResponse {
     type: 'llm' | 'image';
-    content: string;
+    content?: string;
     parentId: string | undefined;
     id: string | undefined;
     raw: any;
     success: boolean;
-    error: string | undefined;
+    error?: string;
     source: source;
 }
 
