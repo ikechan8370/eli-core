@@ -10,17 +10,20 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@types/lodash": "^4.14.195",
     "@types/node": "^20.2.5",
     "@types/ws": "^8.5.4",
     "typescript": "^5.0.4"
   },
   "dependencies": {
+    "@slack/bolt": "^3.13.1",
     "delay": "^6.0.0",
     "eventsource-parser": "^1.0.0",
     "http-proxy-agent": "^7.0.0",
     "https-proxy-agent": "^7.0.0",
     "keyv": "^4.5.2",
     "keyv-file": "^0.2.0",
+    "lodash": "^4.17.21",
     "node-fetch": "^3.3.1",
     "openai": "^3.2.1",
     "ws": "^8.13.0"

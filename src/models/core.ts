@@ -9,8 +9,8 @@ interface AIClient {
 interface AIResponse {
     type: 'llm' | 'image';
     content?: string;
-    parentId: string | undefined;
-    id: string | undefined;
+    parentId?: string;
+    id?: string;
     raw: any;
     success: boolean;
     error?: string;
@@ -26,7 +26,7 @@ class EliError extends Error {
 
 interface SendMessageOption {
     id: string;
-    conversationId: string;
+    conversationId?: string;
     parentId: string | undefined;
     model: string | undefined;
     temperature: number;
