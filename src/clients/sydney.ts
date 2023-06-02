@@ -1,37 +1,38 @@
 import {MessageEngine} from "../models/messages";
-import {AIClient, AIResponse, ChatMessage, Role, SendMessageOption} from "../models/core";
+import {AIClient, AIResponse, ChatMessage, EliError, Role, SendMessageOption} from "../models/core";
 import {randomUUID} from "crypto";
 import {HttpsProxyAgent} from "https-proxy-agent";
 import {RequestInit} from "node-fetch";
-import {RawData} from "ws";
-
+// import {RawData} from "ws";
+// import Websocket from 'ws'
 const Websocket = require('ws')
-import {WebSocket} from "ws";
-
+import {RawData, WebSocket} from "ws";
+// import fetch from 'node-fetch'
+// import delay from 'delay'
 const fetch = require('node-fetch')
-const delay = require('delay')
+import {setTimeout as delay} from 'node:timers/promises';
 
 export interface SydneyLLMClientOption {
-    baseUrl: string;
-    proxy: string | undefined;
+    baseUrl?: string;
+    proxy?: string;
 
-    cookie: string | undefined;
+    cookie?: string;
 
     storage: MessageEngine;
 
-    debug: boolean;
+    debug?: boolean;
 
-    websocketUseReverseProxy: boolean;
+    websocketUseReverseProxy?: boolean;
 
-    wsBaseUrl: string | undefined;
+    wsBaseUrl?: string;
 
-    saveMaxNumUserMessagesInConversationFn: (maxNumUserMessagesInConversation: number) => void | Promise<void>;
+    saveMaxNumUserMessagesInConversationFn?: (maxNumUserMessagesInConversation: number) => void | Promise<void>;
 
-    getMaxNumUserMessagesInConversationFn: () => number | Promise<number>;
+    getMaxNumUserMessagesInConversationFn?: () => number | Promise<number>;
 
-    timeout: number | undefined;
+    timeout?: number;
 
-    firstMessageTimeout: number | undefined;
+    firstMessageTimeout?: number;
 }
 
 
@@ -55,10 +56,10 @@ export class SydneyLLMClient implements AIClient {
         // if (opts.proxy && !Config.sydneyForceUseReverse) {
         //   this.opts.host = 'https://www.bing.com'
         // }
-        this.debug = opts.debug
+        this.debug = opts.debug || false
         this.storage = opts.storage
         this.cookie = opts.cookie
-        this.websocketUseReverseProxy = opts.websocketUseReverseProxy;
+        this.websocketUseReverseProxy = opts.websocketUseReverseProxy || false;
         this.saveMaxNumUserMessagesInConversationFn = opts.saveMaxNumUserMessagesInConversationFn || ((_n: number) => {
         })
         this.getMaxNumUserMessagesInConversationFn = opts.getMaxNumUserMessagesInConversationFn || (() => 20)
@@ -77,7 +78,7 @@ export class SydneyLLMClient implements AIClient {
         return Promise.resolve([]);
     }
 
-    async sendMessage(prompt: string, options: SydneySendMessageOption, role: Role): Promise<AIResponse> {
+    async sendMessage(prompt: string, options: SydneySendMessageOption, role: Role = 'user'): Promise<AIResponse> {
         let parentMessageId: string | undefined = options.parentId;
         let conversationId: string = options.conversationId || randomUUID();
         let messages: ChatMessage[] = await this.storage.getMessages(parentMessageId, conversationId);
@@ -172,14 +173,14 @@ export class SydneyLLMClient implements AIClient {
                         author: 'user',
                         inputMethod: 'Keyboard',
                         text: prompt,
-                        messageType: options.messageType
+                        messageType: options.messageType || 'SearchQuery'
                         // messageType: 'SearchQuery'
                     },
                     conversationSignature: createRes.conversationSignature,
                     participant: {
                         id: createRes.clientId
                     },
-                    conversationId,
+                    conversationId: createRes.conversationId,
                     previousMessages: pm
                 }
             ],
@@ -432,7 +433,7 @@ export class SydneyLLMClient implements AIClient {
             })
         })
         const userMessage = {
-            id: crypto.randomUUID(),
+            id: randomUUID(),
             parentMessageId,
             role: 'User',
             message: prompt
@@ -449,7 +450,7 @@ export class SydneyLLMClient implements AIClient {
                 conversationExpiryTime
             } = await messagePromise
             const replyMessage = {
-                id: crypto.randomUUID(),
+                id: randomUUID(),
                 parentMessageId: userMessage.id,
                 role: 'Bing',
                 message: reply?.text,
@@ -500,7 +501,7 @@ export class SydneyLLMClient implements AIClient {
                 'sec-fetch-dest': 'empty',
                 'sec-fetch-mode': 'cors',
                 'sec-fetch-site': 'same-origin',
-                'x-ms-client-request-id': crypto.randomUUID(),
+                'x-ms-client-request-id': randomUUID(),
                 'x-ms-useragent': 'azsdk-js-api-client-factory/1.0.0-beta.1 core-rest-pipeline/1.10.3 OS/macOS',
                 // cookie: this.opts.cookies || `_U=${this.opts.userToken}`,
                 Referer: 'https://edgeservices.bing.com/edgesvc/chat?udsframed=1&form=SHORUN&clientscopes=chat,noheader,channelstable,',
@@ -546,7 +547,13 @@ export class SydneyLLMClient implements AIClient {
                 agent = this.agent
             }
             if (this.websocketUseReverseProxy) {
-                sydneyHost = this.wsHost
+                sydneyHost = this.wsHost || this.host;
+                if (!sydneyHost) {
+                    throw new EliError('you must specify wsHost if websocketUseReverseProxy is set to true')
+                }
+                if (sydneyHost.startsWith("http")) {
+                    sydneyHost = sydneyHost.replace('https://', 'wss://').replace('http://', 'ws://')
+                }
             }
             console.log(`use sydney websocket host: ${sydneyHost}`)
             let ws: WebSocket = new Websocket(sydneyHost + '/sydney/ChatHub', undefined, {
@@ -622,18 +629,18 @@ interface CreateBingConversationResponse {
 const genRanHex = (size: number) => [...Array(size)].map(() => Math.floor(Math.random() * 16).toString(16)).join('')
 
 interface SydneySendMessageOption extends SendMessageOption {
-    generateContent: boolean | undefined;
-    messageType: 'Chat' | 'SearchQuery';
+    generateContent?: boolean;
+    messageType?: 'Chat' | 'SearchQuery';
 
     /**
      * these messages will be put on the top of the previous messages.
      */
-    preMessages: ChatMessage[] | undefined;
+    preMessages?: ChatMessage[];
 
     /**
      * web context content
      */
-    context: string | undefined;
+    context?: string;
 
     /**
      * if true, the apology response will not be stored as conversation

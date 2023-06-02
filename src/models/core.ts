@@ -25,19 +25,19 @@ class EliError extends Error {
 }
 
 interface SendMessageOption {
-    id: string;
+    id?: string;
     conversationId?: string;
-    parentId: string | undefined;
-    model: string | undefined;
-    temperature: number;
-    topK: number;
-    maxTokens: number;
+    parentId?: string;
+    model?: string;
+    temperature?: number;
+    topK?: number;
+    maxTokens?: number;
     /**
      * chatgpt only
      */
-    action: undefined | 'next' | 'continue';
+    action?: 'next' | 'continue';
 
-    debug: boolean;
+    debug?: boolean;
 }
 type Role = 'AI' | 'system' | 'user';
 interface ChatMessage {

@@ -4,27 +4,32 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "mocha --require ts-node/register 'test/**/*.test.ts' --timeout 20000"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@types/chai": "^4.3.5",
     "@types/lodash": "^4.14.195",
+    "@types/mocha": "^10.0.1",
     "@types/node": "^20.2.5",
+    "@types/node-fetch": "^2.6.4",
     "@types/ws": "^8.5.4",
+    "chai": "^4.3.7",
+    "mocha": "^10.2.0",
+    "ts-node": "^10.9.1",
     "typescript": "^5.0.4"
   },
   "dependencies": {
     "@slack/bolt": "^3.13.1",
-    "delay": "^6.0.0",
     "eventsource-parser": "^1.0.0",
     "http-proxy-agent": "^7.0.0",
     "https-proxy-agent": "^7.0.0",
     "keyv": "^4.5.2",
     "keyv-file": "^0.2.0",
     "lodash": "^4.17.21",
-    "node-fetch": "^3.3.1",
+    "node-fetch": "^2.6.11",
     "openai": "^3.2.1",
     "ws": "^8.13.0"
   }

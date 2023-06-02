@@ -10,7 +10,7 @@ export interface MessageEngine {
      * @param id
      * @param conversationId
      */
-    getMessages: (id: string | undefined, conversationId: string) => ChatMessage[] | Promise<ChatMessage[]>;
+    getMessages: (id: string | undefined, conversationId?: string) => ChatMessage[] | Promise<ChatMessage[]>;
     /**
      * save a single message. It should be called at least twice in a round of conversation (AI and user both)
      * @param parentId
@@ -92,7 +92,10 @@ export class KeyvFileMessageEngine implements MessageEngine {
         }
     }
 
-    async getMessages(id: string | undefined, conversationId: string): Promise<ChatMessage[]> {
+    async getMessages(id: string | undefined, conversationId?: string): Promise<ChatMessage[]> {
+        if (!conversationId) {
+            return []
+        }
         let conv: ChatMessage[] | undefined = await this.engine.get(conversationId)
         if (!conv || conv.length === 0) {
             return []

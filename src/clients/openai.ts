@@ -9,9 +9,9 @@ const {Configuration, OpenAIApi} = require("openai");
 
 interface OpenAIClientOption {
     apiKey: string;
-    apiBaseUrl: string;
+    apiBaseUrl?: string;
     storage: MessageEngine;
-    proxy: string | undefined;
+    proxy?: string;
 }
 
 export class OpenAIClient implements AIClient {
@@ -49,20 +49,21 @@ export class OpenAIClient implements AIClient {
             id
         })
         let openai = this.client;
-        const completion: CreateChatCompletionResponse = await openai.createChatCompletion({
+        let messagesConverted = messages.map(message => {
+            return {
+                role: this.convertRole(message.role),
+                content: message.content
+            }
+        })
+        const completion: CreateChatCompletionResponse = (await openai.createChatCompletion({
             model: options.model,
-            messages: messages.map(message => {
-                return {
-                    role: this.convertRole(message.role),
-                    content: message.content
-                }
-            })
+            messages: messagesConverted
         }, {
             httpsAgent: this.agent
-        })
+        })).data
         let content = completion.choices[0].message?.content;
         if (!content) {
-            throw new EliError("no response from OpenAI")
+            throw new EliError(JSON.stringify(completion) || "no response from OpenAI")
         }
         messages.push({
             content,

@@ -12,7 +12,7 @@ export interface ChatGPTClientOption {
     accessToken: string;
     apiReverseUrl: string;
 
-    proxy: string | undefined;
+    proxy?: string;
 
 }
 export class ChatGPTClient implements AIClient{
@@ -31,7 +31,7 @@ export class ChatGPTClient implements AIClient{
         }
     }
 
-    async sendMessage (prompt: string, options: SendMessageOption, role: Role): Promise<AIResponse> {
+    async sendMessage (prompt: string, options: SendMessageOption, role: Role = 'user'): Promise<AIResponse> {
         if (role !== 'user') {
             throw new EliError("chatgpt client doesn't support role " + role as string)
         }
