@@ -35,6 +35,9 @@ export interface SydneyLLMClientOption {
     firstMessageTimeout?: number;
 }
 
+export interface SydneyAIResponse extends AIResponse {
+    imageTag?: string;
+}
 
 export class SydneyLLMClient implements AIClient {
     private readonly host: string;
@@ -78,7 +81,7 @@ export class SydneyLLMClient implements AIClient {
         return Promise.resolve([]);
     }
 
-    async sendMessage(prompt: string, options: SydneySendMessageOption, role: Role = 'user'): Promise<AIResponse> {
+    async sendMessage(prompt: string, options: SydneySendMessageOption, role: Role = 'user'): Promise<SydneyAIResponse> {
         let parentMessageId: string | undefined = options.parentId;
         let conversationId: string = options.conversationId || randomUUID();
         let messages: ChatMessage[] = await this.storage.getMessages(parentMessageId, conversationId);
@@ -467,7 +470,8 @@ export class SydneyLLMClient implements AIClient {
                 raw: reply,
                 source: 'sydney',
                 success: true,
-                type: 'llm'
+                type: 'llm',
+                imageTag: reply.imageTag
             }
         } catch (err) {
             throw err
@@ -506,12 +510,11 @@ export class SydneyLLMClient implements AIClient {
                 // cookie: this.opts.cookies || `_U=${this.opts.userToken}`,
                 Referer: 'https://edgeservices.bing.com/edgesvc/chat?udsframed=1&form=SHORUN&clientscopes=chat,noheader,channelstable,',
                 'Referrer-Policy': 'origin-when-cross-origin',
-                cookie: ""
+                // cookie: ""
             }
         }
         if (this.cookie) {
             // 疑似无需token了
-            // @ts-ignore
             fetchOptions.headers['cookie'] = `_U=${this.cookie}`
         }
         fetchOptions.agent = this.agent
@@ -674,14 +677,14 @@ interface suggestedResponse {
 
 
 interface SydneyMessage extends suggestedResponse {
-    adaptiveCards?: adaptiveCard[] | undefined;
-    sourceAttributions?: any[] | undefined;
-    suggestedResponses?: suggestedResponse[] | undefined;
+    adaptiveCards?: adaptiveCard[];
+    sourceAttributions?: any[];
+    suggestedResponses?: suggestedResponse[];
 
-    contentType?: string | undefined;
+    contentType?: string;
 
-    imageTag?: string | undefined;
-    spokenText?: string | undefined;
+    imageTag?: string;
+    spokenText?: string;
 
 }
 
@@ -712,5 +715,5 @@ interface SydneyItem {
 
 interface SydneyWsMessage {
     message: SydneyMessage;
-    conversationExpiryTime?: string | undefined;
+    conversationExpiryTime?: string;
 }

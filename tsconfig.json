@@ -2,7 +2,8 @@
   "compilerOptions": {
     "target": "es6",
     "module": "CommonJS",
-    "strict": true
+    "allowJs": true,
+    "strict": false
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist"]

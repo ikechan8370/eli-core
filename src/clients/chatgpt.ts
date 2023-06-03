@@ -15,7 +15,7 @@ export interface ChatGPTClientOption {
     proxy?: string;
 
 }
-export class ChatGPTClient implements AIClient{
+export class ChatGPTClient implements AIClient {
     private readonly _accessToken: string;
     private readonly _apiReverseUrl: string;
     private agent: HttpsProxyAgent<string> | undefined;

@@ -2,6 +2,7 @@
   "extends": "./tsconfig.json",
   "include": ["src", "test", "./**/*.ts"],
   "compilerOptions": {
-    "module": "CommonJS"
+    "module": "CommonJS",
+    "allowJs": true
   }
 }

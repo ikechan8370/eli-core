@@ -15,10 +15,11 @@ interface AIResponse {
     success: boolean;
     error?: string;
     source: source;
+    conversationId?: string;
 }
 
 
-type source = 'openai' | 'chatgpt' | 'bing' | 'sydney' | 'xh' | 'chatglm' | 'slack-claude';
+type source = 'openai' | 'chatgpt' | 'bing' | 'sydney' | 'xh' | 'chatglm' | 'slack-claude' | 'character.ai';
 
 class EliError extends Error {
     // source: source;
