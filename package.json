@@ -1,13 +1,23 @@
 {
   "name": "eli-core",
   "version": "1.0.0",
-  "description": "",
+  "description": "core library of eli",
   "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ikechan8370/eli-core"
+  },
   "scripts": {
     "test": "mocha --require ts-node/register 'test/**/*.test.ts' --timeout 20000"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "eli",
+    "chatgpt",
+    "openai",
+    "bing",
+    "llm"
+  ],
+  "author": "ikechan8370",
   "license": "ISC",
   "devDependencies": {
     "@types/chai": "^4.3.5",
