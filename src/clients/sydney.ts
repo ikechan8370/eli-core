@@ -3,14 +3,14 @@ import {AIClient, AIResponse, ChatMessage, EliError, Role, SendMessageOption} fr
 import {randomUUID} from "crypto";
 import {HttpsProxyAgent} from "https-proxy-agent";
 import {RequestInit} from "node-fetch";
+import {RawData, WebSocket} from "ws";
+import {setTimeout as delay} from 'node:timers/promises';
 // import {RawData} from "ws";
 // import Websocket from 'ws'
 const Websocket = require('ws')
-import {RawData, WebSocket} from "ws";
 // import fetch from 'node-fetch'
 // import delay from 'delay'
 const fetch = require('node-fetch')
-import {setTimeout as delay} from 'node:timers/promises';
 
 export interface SydneyLLMClientOption {
     baseUrl?: string;

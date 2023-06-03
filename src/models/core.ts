@@ -3,7 +3,11 @@ interface AIClient {
 
     destroyConversation(conversationId: string): Promise<void>;
 
-    getHistory(conversationId: string): Promise<ChatMessage[]>;
+    getHistory(option: string | GetHistoryOption): Promise<ChatMessage[]>;
+}
+
+export interface GetHistoryOption {
+    conversationId: string;
 }
 
 interface AIResponse {
@@ -40,7 +44,9 @@ interface SendMessageOption {
 
     debug?: boolean;
 }
+
 type Role = 'AI' | 'system' | 'user';
+
 interface ChatMessage {
     role: Role;
     content: string;
