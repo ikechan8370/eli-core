@@ -1,6 +1,6 @@
 {
   "name": "eli-core",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "core library of eli",
   "main": "index.js",
   "repository": {
